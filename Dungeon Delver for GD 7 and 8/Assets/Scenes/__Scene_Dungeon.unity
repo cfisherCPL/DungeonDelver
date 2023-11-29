@@ -194,7 +194,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -277,7 +277,7 @@ Camera:
   m_TargetDisplay: 0
   m_TargetEye: 3
   m_HDR: 1
-  m_AllowMSAA: 1
+  m_AllowMSAA: 0
   m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
@@ -308,6 +308,8 @@ GameObject:
   m_Component:
   - component: {fileID: 663139870}
   - component: {fileID: 663139869}
+  - component: {fileID: 663139871}
+  - component: {fileID: 663139872}
   m_Layer: 0
   m_Name: Grid
   m_TagString: Untagged
@@ -343,6 +345,32 @@ Transform:
   - {fileID: 1194711059}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &663139871
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663139868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 39073864926a2478080d6e532b21785a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  delverLevel: {fileID: 4900000, guid: 6e019663848454368b14fc96468cbbe2, type: 3}
+--- !u!114 &663139872
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 663139868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9e23c8d81f258421098baf47ca469831, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  visualMap: {fileID: 1194711061}
 --- !u!1 &1194711058
 GameObject:
   m_ObjectHideFlags: 0
