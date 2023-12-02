@@ -5,12 +5,15 @@ using UnityEngine;
 [RequireComponent(typeof(InRoom))]
 public class Dray : MonoBehaviour, IFacingMover
 {
-    public enum eMode { idle, move, attack }
+    static public IFacingMover IFM;
+    public enum eMode { idle, move, attack, roomTrans }
 
     [Header("Inscribed")]
     public float speed = 5;
     public float attackDuration = 0.25f;// Number of seconds to attack
     public float attackDelay = 0.5f;    // Delay between attacks
+    public float roomTransDelay = 0.5f; // Room transition delay   // b
+
 
 
     [Header("Dynamic")]
@@ -20,6 +23,8 @@ public class Dray : MonoBehaviour, IFacingMover
     
     private float timeAtkDone = 0;                                   // b
     private float timeAtkNext = 0;
+    private float roomTransDone = 0;                                // b
+    private Vector2 roomTransPos;
 
     private Rigidbody2D rigid;
     private Animator anim;
@@ -34,6 +39,7 @@ public class Dray : MonoBehaviour, IFacingMover
 
     void Awake()
     {
+        IFM = this;
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         inRm = GetComponent<InRoom>();
@@ -42,6 +48,17 @@ public class Dray : MonoBehaviour, IFacingMover
     // Update is called once per frame
     void Update()
     {
+        if (mode == eMode.roomTrans)
+        {                                      // c
+            rigid.velocity = Vector3.zero;
+            anim.speed = 0;
+            posInRoom = roomTransPos;  // Keeps Dray in place
+            if (Time.time < roomTransDone) return;
+            // The following line is only reached if Time.time >= transitionDone
+            mode = eMode.idle;
+        }
+
+
         // Finishing the attack when it’s over
         if (mode == eMode.attack && Time.time >= timeAtkDone)
         {                // a
@@ -102,6 +119,56 @@ public class Dray : MonoBehaviour, IFacingMover
         rigid.velocity = vel * speed;
 
     }
+
+    void LateUpdate()
+    {
+        // Get the nearest quarter-grid position to Dray
+        Vector2 gridPosIR = GetGridPosInRoom(0.25f);                        // d
+        
+        // Check to see whether we’re in a Door tile
+        int doorNum;
+        for (doorNum = 0; doorNum < 4; doorNum++)
+        {                              // e
+            if (gridPosIR == InRoom.DOORS[doorNum])
+            {
+                break;
+            }
+        }
+    
+        if (doorNum > 3 || doorNum != facing) return;                       // f
+    
+        // Move to the next room
+        Vector2 rm = roomNum;
+        switch (doorNum)
+        {                                                    // g
+            case 0:
+                rm.x += 1;
+                break;
+            case 1:
+                rm.y += 1;
+                break;
+            case 2:
+                rm.x -= 1;
+                break;
+            case 3:
+                rm.y -= 1;
+                break;
+        }
+    
+        // Make sure that the rm we want to jump to is valid
+        if (0 <= rm.x && rm.x <= InRoom.MAX_RM_X)
+        {                           // h
+            if (0 <= rm.y && rm.y <= InRoom.MAX_RM_Y)
+            {
+                roomNum = rm;
+                roomTransPos = InRoom.DOORS[(doorNum + 2) % 4];               // i
+                posInRoom = roomTransPos;
+                mode = eMode.roomTrans; // j
+                roomTransDone = Time.time + roomTransDelay;
+            }
+        }
+    }
+
 
     //———————————————————— Implementation of IFacingMover ————————————————————
     public int GetFacing() { return facing; }                                // e

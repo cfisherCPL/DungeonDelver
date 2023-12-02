@@ -2,7 +2,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Skeletos : Enemy
+[RequireComponent(typeof(InRoom))]
+public class Skeletos : Enemy, IFacingMover
 {
     [Header("Inscribed: Skeletos")]                                              // b
     public int speed = 2;
@@ -13,6 +14,14 @@ public class Skeletos : Enemy
     [Range(0, 4)]
     public int facing = 0;
     public float timeNextDecision = 0;
+
+    private InRoom inRm;
+
+    protected override void Awake()
+    {                                        // d
+        base.Awake();
+        inRm = GetComponent<InRoom>();
+    }
 
     // Update is called once per frame
     void Update()
@@ -29,6 +38,41 @@ public class Skeletos : Enemy
     {                                                     // d
         facing = Random.Range(0, 5);
         timeNextDecision = Time.time + Random.Range(timeThinkMin, timeThinkMax);
+    }
+
+
+    //———————————————————— Implementation of IFacingMover ————————————————————
+    public int GetFacing()
+    { // This IS different from the Dray version!!!    // e
+            return facing % 4;
+    }
+    
+    public float GetSpeed() { return speed; }                  
+      
+    public bool moving
+    {     // This IS different from the Dray version!!!    // f
+        get { return (facing < 4); }
+    }
+    
+    public float gridMult { get { return inRm.gridMult; } }              
+          
+    public bool isInRoom { get { return inRm.isInRoom; } }
+    
+    public Vector2 roomNum
+    {                          
+        get { return inRm.roomNum; }
+        set { inRm.roomNum = value; }
+    }
+    
+    public Vector2 posInRoom
+    {
+        get { return inRm.posInRoom; }
+        set { inRm.posInRoom = value; }
+    }
+    
+    public Vector2 GetGridPosInRoom(float mult = -1)
+    {
+        return inRm.GetGridPosInRoom(mult);
     }
 
 }

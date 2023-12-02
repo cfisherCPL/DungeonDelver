@@ -8,6 +8,15 @@ public class InRoom : MonoBehaviour
     static public float ROOM_H = 11;
     static public float WALL = 2;
     static Vector2 GRID_OFFSET = new Vector2(0.5f, 0.5f);
+    static public int MAX_RM_X = 9;                                          // a
+    static public int MAX_RM_Y = 9;
+
+    static public Vector2[] DOORS = new Vector2[] {                              // b
+        new Vector2(14.5f, 5.5f ),                        // Right Door
+        new Vector2( 8.0f, 9.5f ),                        // Up Door
+        new Vector2( 1.5f, 5.5f ),                        // Left Door
+        new Vector2( 8.0f, 1.5f )                         // Down Door
+        };
 
     [Header("Inscribed")]
     public bool keepInRoom = true;  
