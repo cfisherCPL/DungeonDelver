@@ -55,6 +55,9 @@ public class MapInfo : MonoBehaviour
                 }
             }
         }
+
+        TileSwapManager.SWAP_TILES(MAP);// Add this one line after the for loop
+
         Debug.Log("Map size: " + W + " wide by " + H + " high");
     }
 
