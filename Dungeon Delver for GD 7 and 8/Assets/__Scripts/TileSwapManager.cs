@@ -40,8 +40,20 @@ public class TileSwapManager : MonoBehaviour
                 {                 // d
                     tSwap = TILE_SWAP_DICT[fromTileNum];
                     map[i, j] = tSwap.toTileNum;                                   // e
-                    
-                    // More will be added here
+
+                    // Instantiate and Init the swapPrefab ISwappable         // a
+                    GameObject go = Instantiate<GameObject>(tSwap.swapPrefab);
+                    ISwappable iSwap = go.GetComponent<ISwappable>();
+                    if (iSwap != null)
+                    {                                    // b
+                        iSwap.Init(fromTileNum, i, j);
+                        iSwap.guaranteedDrop = tSwap.guaranteedDrop;
+                    }
+                    else
+                    {
+                        go.transform.position = new Vector3(i, j, 0)
+                        +MapInfo.OFFSET;             // c
+                    }
                 }
             }
         }
