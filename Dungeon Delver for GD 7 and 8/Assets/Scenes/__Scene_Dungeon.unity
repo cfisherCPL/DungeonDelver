@@ -671,9 +671,13 @@ MonoBehaviour:
   attackDelay: 0.5
   roomTransDelay: 0.5
   maxHealth: 10
+  knockbackSpeed: 10
+  knockbackDuration: 0.25
+  invincibleDuration: 0.5
   dirHeld: -1
   facing: 1
   mode: 0
+  invincible: 0
   _numKeys: 0
   _health: 0
 --- !u!58 &584490764
@@ -946,7 +950,8 @@ GameObject:
   - component: {fileID: 847411286}
   - component: {fileID: 847411288}
   - component: {fileID: 847411287}
-  m_Layer: 0
+  - component: {fileID: 847411289}
+  m_Layer: 8
   m_Name: Sword
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1065,6 +1070,20 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!114 &847411289
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 847411285}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e6eb05b2f8a448bf828108e43546cec, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  damage: 2
+  knockback: 1
 --- !u!1 &1194711058
 GameObject:
   m_ObjectHideFlags: 0

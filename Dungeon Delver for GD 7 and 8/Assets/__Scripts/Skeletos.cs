@@ -24,8 +24,11 @@ public class Skeletos : Enemy, IFacingMover
     }
 
     // Update is called once per frame
-    void Update()
+    protected override void Update()
     {
+        base.Update();                                                    // b
+        if (knockback) return;
+
         if (Time.time >= timeNextDecision)
         {                                     // c
             DecideDirection();

@@ -8,7 +8,7 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     static private Dray S;
 
     static public IFacingMover IFM;
-    public enum eMode { idle, move, attack, roomTrans }
+    public enum eMode { idle, move, attack, roomTrans, knockback }
 
     [Header("Inscribed")]
     public float speed = 5;
@@ -16,12 +16,16 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     public float attackDelay = 0.5f;    // Delay between attacks
     public float roomTransDelay = 0.5f; // Room transition delay   // b
     public int maxHealth = 10;
+    public float knockbackSpeed = 10;                              // b
+    public float knockbackDuration = 0.25f;
+    public float invincibleDuration = 0.5f;
 
 
     [Header("Dynamic")]
     public int dirHeld = -1; // Direction of the held movement key
     public int facing = 1;   // Direction Dray is facing 
     public eMode mode = eMode.idle;                                 // a
+    public bool invincible = false;
     [SerializeField] [Range(0, 20)]
     private int _numKeys = 0;
 
@@ -37,7 +41,11 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     private float timeAtkNext = 0;
     private float roomTransDone = 0;                                // b
     private Vector2 roomTransPos;
-
+    private float knockbackDone = 0;                                // d
+    private float invincibleDone = 0;
+    private Vector2 knockbackVel;
+    
+    private SpriteRenderer sRend;
     private Rigidbody2D rigid;
     private Animator anim;
     private InRoom inRm;
@@ -53,6 +61,7 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     {
         S = this;
         IFM = this;
+        sRend = GetComponent<SpriteRenderer>();
         rigid = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         inRm = GetComponent<InRoom>();
@@ -62,6 +71,17 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     // Update is called once per frame
     void Update()
     {
+        // Check knockback and invincibility
+        if (invincible && Time.time > invincibleDone) invincible = false;     // g
+        sRend.color = invincible ? Color.red : Color.white;
+        if (mode == eMode.knockback)
+        {
+            rigid.velocity = knockbackVel;
+            if (Time.time < knockbackDone) return;
+            // The following line is only reached if Time.time >= knockbackDone
+            mode = eMode.idle;
+        }
+
         if (mode == eMode.roomTrans)
         {                                      // c
             rigid.velocity = Vector3.zero;
@@ -181,6 +201,45 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
                 roomTransDone = Time.time + roomTransDelay;
             }
         }
+    }
+
+    void OnCollisionEnter2D(Collision2D coll)
+    {
+        if (invincible) return; // Return if Dray can’t be damaged            // h
+        DamageEffect dEf = coll.gameObject.GetComponent<DamageEffect>();
+        if (dEf == null) return; // If no DamageEffect, exit this method
+    
+        health -= dEf.damage;  // Subtract the damage amount from health      // i
+        invincible = true;  // Make Dray invincible
+        invincibleDone = Time.time + invincibleDuration;
+
+        if (dEf.knockback)
+        {  // Knockback Dray                               // j
+            // Determine the direction of knockback from relative position
+            Vector2 delta = transform.position - coll.transform.position;     // k
+            if (Mathf.Abs(delta.x) >= Mathf.Abs(delta.y))
+            {
+                // Knockback should be horizontal
+                delta.x = (delta.x > 0) ? 1 : -1;
+                delta.y = 0;
+            }
+            else
+            {
+                // Knockback should be vertical
+                delta.x = 0;
+                delta.y = (delta.y > 0) ? 1 : -1;
+            }
+    
+            // Apply knockback speed to the Rigidbody
+            knockbackVel = delta * knockbackSpeed;
+            rigid.velocity = knockbackVel;
+    
+            // Set mode to knockback and set time to stop knockback
+            mode = eMode.knockback;
+            knockbackDone = Time.time + knockbackDuration;
+        }
+
+
     }
 
     static public int HEALTH { get { return S._health; } }                  // f
