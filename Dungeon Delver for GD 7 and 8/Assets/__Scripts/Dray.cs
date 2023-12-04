@@ -19,6 +19,7 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     public float knockbackSpeed = 10;                              // b
     public float knockbackDuration = 0.25f;
     public float invincibleDuration = 0.5f;
+    public int healthPickupAmount = 2;
 
 
     [Header("Dynamic")]
@@ -241,6 +242,31 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
 
 
     }
+
+    void OnTriggerEnter2D(Collider2D colld)
+    {
+        PickUp pup = colld.GetComponent<PickUp>();                            // b
+        if (pup == null) return;
+
+        switch (pup.itemType)
+        {
+            case PickUp.eType.health:
+                health = Mathf.Min(health + healthPickupAmount, maxHealth);
+                break;
+            case PickUp.eType.key:
+                _numKeys++;
+                break;
+            default:
+                Debug.LogError("No case for PickUp type " + pup.itemType);      // c
+                break;
+        }
+
+        Destroy(pup.gameObject);
+
+    }
+
+
+
 
     static public int HEALTH { get { return S._health; } }                  // f
     static public int NUM_KEYS { get { return S._numKeys; } }
