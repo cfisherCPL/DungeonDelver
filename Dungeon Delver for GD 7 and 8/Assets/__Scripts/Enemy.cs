@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class Enemy : MonoBehaviour, ISwappable
 {
     protected static Vector2[] directions = new Vector2[] {                  // a
         Vector2.right, Vector2.up, Vector2.left, Vector2.down, Vector2.zero };
@@ -12,7 +12,8 @@ public class Enemy : MonoBehaviour
     public float knockbackSpeed = 10;                         // a
     public float knockbackDuration = 0.25f;
     public float invincibleDuration = 0.5f;
-    public GameObject guaranteedDrop = null;                          // a
+    [SerializeField]                                                          // b
+    private GameObject _guaranteedDrop = null;// a
     public List<GameObject> randomItems;
 
 
@@ -121,8 +122,25 @@ public class Enemy : MonoBehaviour
                 go = Instantiate<GameObject>(prefab);
                 go.transform.position = transform.position;
             }
-            Destroy(gameObject);
         }
+        Destroy(gameObject);
+    }
+
+    //———————————————————— Implementation of ISwappable ————————————————————
+    public GameObject guaranteedDrop
+    {                                        // c
+        get { return _guaranteedDrop; }
+        set { _guaranteedDrop = value; }
+    }
+    
+    public int tileNum { get; private set; }                                  // d
+    
+    public virtual void Init(int fromTileNum, int tileX, int tileY)
+    {       // e
+        tileNum = fromTileNum;
+    
+        // Position this GameObject correctly
+        transform.position = new Vector3(tileX, tileY, 0) + MapInfo.OFFSET;
     }
 
 }
