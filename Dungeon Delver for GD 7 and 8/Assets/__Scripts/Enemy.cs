@@ -112,7 +112,17 @@ public class Enemy : MonoBehaviour
             go = Instantiate<GameObject>(guaranteedDrop);
             go.transform.position = transform.position;
         }
-        Destroy(gameObject);
+        else if (randomItems.Count > 0)
+        {                                     // a
+            int n = Random.Range(0, randomItems.Count);
+            GameObject prefab = randomItems[n];
+            if (prefab != null)
+            {                                                // b
+                go = Instantiate<GameObject>(prefab);
+                go.transform.position = transform.position;
+            }
+            Destroy(gameObject);
+        }
     }
 
 }

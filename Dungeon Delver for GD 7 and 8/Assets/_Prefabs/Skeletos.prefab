@@ -151,10 +151,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0517b801cdcf8441cbd5dbd31253df74, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxHealth: 1
+  maxHealth: 4
   knockbackSpeed: 10
   knockbackDuration: 0.25
   invincibleDuration: 0.5
+  guaranteedDrop: {fileID: 0}
+  randomItems:
+  - {fileID: 3150978350029610550, guid: 13eaacd6f41ba4831a32baec906afd91, type: 3}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
   health: 4
   invincible: 0
   knockback: 0
