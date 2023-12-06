@@ -8,7 +8,7 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     static private Dray S;
 
     static public IFacingMover IFM;
-    public enum eMode { idle, move, attack, roomTrans, knockback }
+    public enum eMode { idle, move, attack, roomTrans, knockback, gadget }
 
     [Header("Inscribed")]
     public float speed = 5;
@@ -20,6 +20,10 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     public float knockbackDuration = 0.25f;
     public float invincibleDuration = 0.5f;
     public int healthPickupAmount = 2;
+    public KeyCode keyAttack = KeyCode.Z;                           // b
+    public KeyCode keyGadget = KeyCode.X;
+    [SerializeField]                                 
+    private bool startWithGrappler = true;
 
 
     [Header("Dynamic")]
@@ -45,7 +49,8 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     private float knockbackDone = 0;                                // d
     private float invincibleDone = 0;
     private Vector2 knockbackVel;
-    
+
+    private Grappler grappler;
     private SpriteRenderer sRend;
     private Rigidbody2D rigid;
     private Animator anim;
@@ -67,6 +72,9 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
         anim = GetComponent<Animator>();
         inRm = GetComponent<InRoom>();
         health = maxHealth;
+
+        grappler = GetComponentInChildren<Grappler>();                           // b
+        if (startWithGrappler) currentGadget = grappler;
     }
 
     // Update is called once per frame
@@ -120,8 +128,22 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
                 mode = eMode.move;
             }
 
+            // Pressing the gadget button
+            if (Input.GetKeyDown(keyGadget))
+            {                           // d
+                if (currentGadget != null)
+                {
+                    if (currentGadget.GadgetUse(this, GadgetIsDone))
+                    {   // e
+                        mode = eMode.gadget;
+                        rigid.velocity = Vector2.zero;
+                    }
+                }
+            }
+
+
             // Pressing the attack button
-            if (Input.GetKeyDown(KeyCode.Z) && Time.time >= timeAtkNext)
+            if (Input.GetKeyDown(keyAttack) && Time.time >= timeAtkNext)
             {     // e
                 mode = eMode.attack;
                 timeAtkDone = Time.time + attackDuration;
@@ -147,6 +169,11 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
                 vel = directions[dirHeld];
                 anim.Play("Dray_Walk_" + facing);
                 anim.speed = 1;
+                break;
+
+            case eMode.gadget: // Show Attack pose & wait for IGadget to be done  // g
+                anim.Play("Dray_Attack_" + facing);
+                anim.speed = 0;
                 break;
 
         }
@@ -234,10 +261,14 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
             // Apply knockback speed to the Rigidbody
             knockbackVel = delta * knockbackSpeed;
             rigid.velocity = knockbackVel;
-    
-            // Set mode to knockback and set time to stop knockback
-            mode = eMode.knockback;
-            knockbackDone = Time.time + knockbackDuration;
+
+            // If not in gadget mode OR if GadgetCancel is successful
+            if (mode != eMode.gadget || currentGadget.GadgetCancel())
+            {     // i
+                // Set mode to knockback and set time to stop knockback
+                mode = eMode.knockback;
+                knockbackDone = Time.time + knockbackDuration;
+            }
         }
 
 
@@ -312,5 +343,32 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     {                                                          // e
         get { return (Vector2)transform.position; }
     }
+
+#region IGadget_Affordances
+    //———————————————————— IGadget Affordances  ————————————————————
+    public IGadget currentGadget { get; private set; }
+
+    /// <summary>
+    /// Called by an IGadget when it is done. Sets mode to eMode.idle.
+    /// Matches the System.Func<IGadget, bool> delegate type required by the 
+    ///  tDoneCallback parameter of IGadget.GadgetUse().
+    /// </summary>
+    /// <param name="gadget">The IGadget calling this method</param>
+    /// <returns>true if successful, false if not</returns>
+    public bool GadgetIsDone(IGadget gadget)
+    {
+        if (gadget != currentGadget)
+        {
+            Debug.LogError("A non-current Gadget called GadgetDone"
+                +"\ncurrentGadget: " + currentGadget.name
+                +"\tcalled by: " + gadget.name);
+        }
+    
+        mode = eMode.idle;
+        return true;
+    }
+#endregion
+
+
 
 }
