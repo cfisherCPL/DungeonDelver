@@ -14,7 +14,9 @@ public class Grappler : MonoBehaviour, IGadget
     [Tooltip("Maximum length that Grappler will reach")]
     public float maxLength = 7.25f;
     [Tooltip("Minimum distance of Grappler from Dray")]
-    public float minLength = 0.375f;
+    public float minLength = 0.5f;
+    [Tooltip("Health deducted when Dray ends a grapple on an unsafe tile")]
+    public int unsafeTileHealthPenalty = 2;
 
     [Header("Dynamic")] [SerializeField]
     private eMode _mode = eMode.gIdle;
@@ -58,6 +60,11 @@ public class Grappler : MonoBehaviour, IGadget
             case eMode.gIdle:                                                      // e
                 transform.DetachChildren();  // Release any child Transforms
                 gameObject.SetActive(false);
+                if (dray != null && dray.controlledBy == this as IGadget)
+                {     // b
+                    dray.controlledBy = null;
+                    dray.physicsEnabled = true;
+                }
                 break;
     
             case eMode.gOut:                                                       // f
@@ -70,7 +77,10 @@ public class Grappler : MonoBehaviour, IGadget
                 break;
     
             case eMode.gPull:
-                // Blank for now
+                p1 = transform.position;                                          // c
+                rigid.velocity = Vector2.zero;
+                dray.controlledBy = this;                                         // d
+                dray.physicsEnabled = false;
                 break;
         }
     
@@ -98,7 +108,29 @@ public class Grappler : MonoBehaviour, IGadget
                 break;
     
             case eMode.gPull:
-            // You’ll fill this in soon
+                if ((p1 - p0).magnitude > minLength)
+                {                        // e
+                    // Move Dray toward the Grappler hit point
+                    p0 += dirV3s[facing] * grappleSpd * Time.fixedDeltaTime;
+                    dray.transform.position = p0;
+                    line.SetPosition(0, p0);
+                    // Stop Grappler from moving with Dray
+                    transform.position = p1;
+                }
+                else
+                {                                                          // f
+                    // Dray is close enough to stop grappling
+                    p0 = p1 - (dirV3s[facing] * minLength);
+                    dray.transform.position = p0;
+                    // Check whether Dray landed on an unsafe tile
+                    Vector2 checkPos = (Vector2)p0 + new Vector2(0, -0.25f);   // g
+                    if (MapInfo.UNSAFE_TILE_AT_VECTOR2(checkPos))
+                    {
+                        // Dray landed on an unsafe tile
+                        dray.ResetInRoom(unsafeTileHealthPenalty);
+                    }
+                GrappleDone();
+                }
                 break;
         }
     }
@@ -141,7 +173,7 @@ public class Grappler : MonoBehaviour, IGadget
                 break;
 
             case "GrapTiles": // We’ve hit a GrapTile
-                SetGrappleMode(eMode.gRetract); // You’ll replace this in CL 36.34
+                SetGrappleMode(eMode.gPull);
                 break;
 
             default:                                                               // h
@@ -199,4 +231,8 @@ public class Grappler : MonoBehaviour, IGadget
 
     // string name is already part of Grappler (inherited from Object)        // i
  #endregion
+
+
+
+
 }

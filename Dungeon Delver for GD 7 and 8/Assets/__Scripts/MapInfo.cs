@@ -10,11 +10,12 @@ public class MapInfo : MonoBehaviour
     static public int[,] MAP { get; private set; }            
     static public Vector3 OFFSET = new Vector3(0.5f, 0.5f, 0);
     static public string COLLISIONS { get; private set; }                    // a
-
+    static public string GRAP_TILES { get; private set; }
 
     [Header("Inscribed")]
     public TextAsset delverLevel;
     public TextAsset delverCollisions;
+    public TextAsset delverGrapTiles;
 
     // Start is called before the first frame update
     void Start()
@@ -24,6 +25,8 @@ public class MapInfo : MonoBehaviour
         // Loading the COLLISIONS information is simpler than a whole map
         COLLISIONS = Utils.RemoveLineEndings(delverCollisions.text);        // b
         Debug.Log("COLLISIONS contains " + COLLISIONS.Length + " chars");
+        GRAP_TILES = Utils.RemoveLineEndings(delverGrapTiles.text);            // b
+        Debug.Log("GRAP_TILES contains " + GRAP_TILES.Length + " chars");
     }
 
     /// <summary>
@@ -71,7 +74,26 @@ public class MapInfo : MonoBehaviour
         return bounds;
     }
 
+    /// <summary>
+    /// Returns the tileNum at specific coordinates.
+    /// </summary>
+    /// <param name="pos">The position to check as a Vector2</param>
+    /// <returns>The tileNum at that location of the MAP</returns>
+    public static int GET_MAP_AT_VECTOR2(Vector2 pos)
+    {                      // c
+        Vector2Int posInt = Vector2Int.FloorToInt(pos);
+        return MAP[posInt.x, posInt.y];
+    }
 
-
+    /// <summary>
+    /// Checks whether the tile at pos is unsafe (e.g., lava tiles)
+    /// </summary>
+    /// <param name="pos">The position to check as a Vector2</param>
+    /// <returns>True if the tile at that location is unsafe</returns>
+    public static bool UNSAFE_TILE_AT_VECTOR2(Vector2 pos)
+    {                 // d
+        int tileNum = GET_MAP_AT_VECTOR2(pos);
+        return (GRAP_TILES[tileNum] == 'U' );
+    }
 
 }

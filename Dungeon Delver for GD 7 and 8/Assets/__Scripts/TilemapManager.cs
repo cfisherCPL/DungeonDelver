@@ -12,9 +12,11 @@ public class TilemapManager : MonoBehaviour
     [Header("Inscribed")]                                                   // a
     public Tilemap visualMap;
     public Tilemap collisionMap; // a
+    public Tilemap grapTilesMap;
 
     private TileBase[] visualTileBaseArray;
     private TileBase[] collTileBaseArray;
+    private TileBase[] grapTileBaseArray;
 
 
     void Awake()
@@ -75,6 +77,10 @@ public class TilemapManager : MonoBehaviour
         collTileBaseArray = GetCollisionTiles();                              // f
         collisionMap.SetTilesBlock(MapInfo.GET_MAP_BOUNDS(), collTileBaseArray);
 
+        grapTileBaseArray = GetGrapTiles();                                   // c
+        grapTilesMap.SetTilesBlock(MapInfo.GET_MAP_BOUNDS(), grapTileBaseArray);
+        
+
     }
 
     /// <summary>
@@ -124,4 +130,28 @@ public class TilemapManager : MonoBehaviour
         return mapTiles;
     }
 
+    /// <summary>
+    /// Use MapInfo.MAP and MapInfo.GRAP_TILES to create a TileBase[] array 
+    ///  holding the tiles to fill the grapTilesMap Tilemap.
+    /// </summary>
+    /// <returns>The TileBases for grapTilesMap</returns>
+    public TileBase[] GetGrapTiles()
+    {
+        Tile tile;
+        int tileNum;
+        char tileChar;
+        TileBase[] mapTiles = new TileBase[MapInfo.W * MapInfo.H];
+        for (int y = 0; y < MapInfo.H; y++)
+        {
+            for (int x = 0; x < MapInfo.W; x++)
+            {
+                tileNum = MapInfo.MAP[x, y];
+                tileChar = MapInfo.GRAP_TILES[tileNum];                       // d
+                if (tileChar == 'U' ) tileChar = '_';                          // e
+                tile = COLL_TILE_DICT[tileChar];
+                mapTiles[y * MapInfo.W + x] = tile;
+            }
+        }
+        return mapTiles;
+    }
 }

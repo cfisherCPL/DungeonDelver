@@ -49,7 +49,10 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
     private float knockbackDone = 0;                                // d
     private float invincibleDone = 0;
     private Vector2 knockbackVel;
+    private Vector3 lastSafeLoc;                                     // a
+    private int lastSafeFacing;
 
+    private Collider2D colld;
     private Grappler grappler;
     private SpriteRenderer sRend;
     private Rigidbody2D rigid;
@@ -75,11 +78,20 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
 
         grappler = GetComponentInChildren<Grappler>();                           // b
         if (startWithGrappler) currentGadget = grappler;
+        colld = GetComponent<Collider2D>();
+    }
+
+    void Start()
+    {
+        lastSafeLoc = transform.position;                                    // d
+        lastSafeFacing = facing;
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isControlled) return;
+
         // Check knockback and invincibility
         if (invincible && Time.time > invincibleDone) invincible = false;     // g
         sRend.color = invincible ? Color.red : Color.white;
@@ -184,6 +196,8 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
 
     void LateUpdate()
     {
+        if (isControlled) return;
+
         // Get the nearest quarter-grid position to Dray
         Vector2 gridPosIR = GetGridPosInRoom(0.25f);                        // d
         
@@ -227,12 +241,17 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
                 posInRoom = roomTransPos;
                 mode = eMode.roomTrans; // j
                 roomTransDone = Time.time + roomTransDelay;
+
+                lastSafeLoc = transform.position;                            // f
+                lastSafeFacing = facing;
             }
         }
     }
 
     void OnCollisionEnter2D(Collision2D coll)
     {
+        if (isControlled) return;
+
         if (invincible) return; // Return if Dray can’t be damaged            // h
         DamageEffect dEf = coll.gameObject.GetComponent<DamageEffect>();
         if (dEf == null) return; // If no DamageEffect, exit this method
@@ -276,6 +295,8 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
 
     void OnTriggerEnter2D(Collider2D colld)
     {
+        if (isControlled) return;
+
         PickUp pup = colld.GetComponent<PickUp>();                            // b
         if (pup == null) return;
 
@@ -296,7 +317,15 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
 
     }
 
-
+    public void ResetInRoom(int healthLoss = 0)
+    {
+        transform.position = lastSafeLoc;
+        facing = lastSafeFacing;
+        health -= healthLoss;
+    
+        invincible = true; // Make Dray invincible
+        invincibleDone = Time.time + invincibleDuration;
+    }
 
 
     static public int HEALTH { get { return S._health; } }                  // f
@@ -363,11 +392,36 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
                 +"\ncurrentGadget: " + currentGadget.name
                 +"\tcalled by: " + gadget.name);
         }
-    
+        controlledBy = null;                                                 // h
+        physicsEnabled = true;
         mode = eMode.idle;
         return true;
     }
-#endregion
+
+
+    public IGadget controlledBy { get; set; }                                // i
+    public bool isControlled
+    {
+        get { return (controlledBy != null); }
+    }
+
+    [SerializeField]
+    private bool _physicsEnabled = true;                                    // j
+    public bool physicsEnabled
+    {
+        get { return _physicsEnabled; }
+        set
+        {
+            if (_physicsEnabled != value)
+            {
+                _physicsEnabled = value;
+                colld.enabled = _physicsEnabled;
+                rigid.simulated = _physicsEnabled;
+            }
+        }
+    }
+
+    #endregion
 
 
 
