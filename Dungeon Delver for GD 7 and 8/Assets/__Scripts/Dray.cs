@@ -311,6 +311,9 @@ public class Dray : MonoBehaviour, IFacingMover, IKeyMaster
             default:
                 Debug.LogError("No case for PickUp type " + pup.itemType);      // c
                 break;
+            case PickUp.eType.grappler:                                          // a
+                currentGadget = grappler;
+                break;
         }
 
         Destroy(pup.gameObject);
